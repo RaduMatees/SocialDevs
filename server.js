@@ -11,6 +11,9 @@ const app = express()
 // Conect to database
 connectToDB()
 
+// Initialize Middleware
+app.use(express.json({ extended: false }))
+
 // Port Production (Heroku) or development
 const PORT = process.env.PORT || 3001
 
