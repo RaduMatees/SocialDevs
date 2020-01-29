@@ -85,7 +85,7 @@ router.get('/', async (req, res) => {
 })
 
 // @route GET /profile/user/:user_id
-// @desc Get profile by user id
+// @desc GET profile by user id
 // @access Public
 router.get('/user/:user_id', async (req, res) => {
   try {
@@ -93,6 +93,22 @@ router.get('/user/:user_id', async (req, res) => {
 
     if (!profile) return res.status(400).json({ msg: 'No profile found for this user' })
     res.json(profile)
+  } catch (err) {
+    console.error('Error GET /profile/user/:user_id request, ', err.message)
+    if (err.kind === 'ObjectId') return res.status(400).json({ msg: 'No profile found for this user' })
+    res.status(500).send('Error GET /profile/user/:user_id  request')
+  }
+})
+
+// @route DELETE /profile
+// @desc DELETE profile, user & posts
+// @access Private
+router.delete('/', authMiddleware, async (req, res) => {
+  try {
+    await Profile.findOneAndRemove({ user: req.user.id })
+    await User.findByIdAndRemove({ _id: req.user.id })
+
+    res.json({ msg: 'Succesfully deleted user' })
   } catch (err) {
     console.error('Error GET /profile/user/:user_id request, ', err.message)
     if (err.kind === 'ObjectId') return res.status(400).json({ msg: 'No profile found for this user' })
