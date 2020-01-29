@@ -24,7 +24,6 @@ router.get('/me', authMiddleware, async (req, res) => {
 // @route POST /profile
 // @desc Create or Update a user profile
 // @access Private
-
 router.post('/', [authMiddleware, [
   check('status', 'Status is required').not().isEmpty(),
   check('skills', 'At least one skill is required').not().isEmpty()
@@ -69,6 +68,35 @@ router.post('/', [authMiddleware, [
   } catch (err) {
     console.error('Error POST /profile request, ', err.message)
     res.status(500).send('Error POST /profile request')
+  }
+})
+
+// @route GET /profile
+// @desc Get all profiles
+// @access Public
+router.get('/', async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate('user', ['name', 'avatar'])
+    res.json(profiles)
+  } catch (err) {
+    console.error('Error GET /profile request, ', err.message)
+    res.status(500).send('Error GET /profile request')
+  }
+})
+
+// @route GET /profile/user/:user_id
+// @desc Get profile by user id
+// @access Public
+router.get('/user/:user_id', async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar'])
+
+    if (!profile) return res.status(400).json({ msg: 'No profile found for this user' })
+    res.json(profile)
+  } catch (err) {
+    console.error('Error GET /profile/user/:user_id request, ', err.message)
+    if (err.kind === 'ObjectId') return res.status(400).json({ msg: 'No profile found for this user' })
+    res.status(500).send('Error GET /profile/user/:user_id  request')
   }
 })
 
