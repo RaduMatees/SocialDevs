@@ -142,4 +142,37 @@ router.put('/experience', [authMiddleware, [
   }
 })
 
+// @route PUT /profile/experience/:experience_id
+// @desc Update profile experience
+// @access Private
+router.put('/experience/:experience_id', [authMiddleware, [
+  check('title', 'Job title is required').not().isEmpty(),
+  check('company', 'Company name is required').not().isEmpty(),
+  check('from', 'From date is required').not().isEmpty()
+]], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+
+  const { title, company, location, from, to, current, description } = req.body
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+    const selectedExperience = profile.experience.find(exp => exp.id === req.params.experience_id)
+
+    if (title) selectedExperience.title = title
+    if (company) selectedExperience.company = company
+    if (location) selectedExperience.location = location
+    if (from) selectedExperience.from = from
+    if (to) selectedExperience.to = to
+    if (current) selectedExperience.current = current
+    if (description) selectedExperience.description = description
+
+    await profile.save()
+    res.json(profile)
+  } catch (err) {
+    console.error('Error PUT /profile/experience/:experience_id, ', err.message)
+    res.status(500).send('Error PUT /profile/experience/:experience_id  request')
+  }
+})
+
 module.exports = router
