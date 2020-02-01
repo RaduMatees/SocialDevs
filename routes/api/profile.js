@@ -175,4 +175,22 @@ router.put('/experience/:experience_id', [authMiddleware, [
   }
 })
 
+// @route DELETE /profile/experience/:experience_id
+// @desc Delete experience from profile
+// @access Private
+router.delete('/experience/:experience_id', authMiddleware, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+
+    const index = profile.experience.findIndex(exp => exp.id === req.params.experience_id)
+    profile.experience.splice(index, 1)
+
+    await profile.save()
+    res.json(profile)
+  } catch (err) {
+    console.error('Error DELETE /profile/experience/:experience_id, ', err.message)
+    res.status(500).send('Error DELETE /profile/experience/:experience_id  request')
+  }
+})
+
 module.exports = router
