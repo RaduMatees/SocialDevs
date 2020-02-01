@@ -116,6 +116,8 @@ router.delete('/', authMiddleware, async (req, res) => {
   }
 })
 
+// ----- EXPERIENCE -----
+
 // @route PUT /profile/experience
 // @desc Add profile experience
 // @access Private
@@ -190,6 +192,87 @@ router.delete('/experience/:experience_id', authMiddleware, async (req, res) => 
   } catch (err) {
     console.error('Error DELETE /profile/experience/:experience_id, ', err.message)
     res.status(500).send('Error DELETE /profile/experience/:experience_id  request')
+  }
+})
+
+// ----- EDUCATION -----
+
+// @route PUT /profile/education
+// @desc Add profile education
+// @access Private
+router.put('/education', [authMiddleware, [
+  check('school', 'School is required').not().isEmpty(),
+  check('degree', 'Degree is required').not().isEmpty(),
+  check('fieldOfStudy', 'Field of study is required').not().isEmpty(),
+  check('from', 'From date is required').not().isEmpty()
+]], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+
+  const { school, degree, fieldOfStudy, from, to, current, description } = req.body
+  const newEducation = { school, degree, fieldOfStudy, from, to, current, description }
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+    profile.education.unshift(newEducation)
+    await profile.save()
+
+    res.json(profile)
+  } catch (err) {
+    console.error('Error PUT /profile/education, ', err.message)
+    res.status(500).send('Error PUT /profile/education  request')
+  }
+})
+
+// @route PUT /profile/education/:education_id
+// @desc Update profile education
+// @access Private
+router.put('/education/:education_id', [authMiddleware, [
+  check('school', 'School is required').not().isEmpty(),
+  check('degree', 'Degree is required').not().isEmpty(),
+  check('fieldOfStudy', 'Field of study is required').not().isEmpty(),
+  check('from', 'From date is required').not().isEmpty()
+]], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+
+  const { school, degree, fieldOfStudy, from, to, current, description } = req.body
+
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+    const selectedEeducation = profile.education.find(ed => ed.id === req.params.education_id)
+
+    if (school) selectedEeducation.school = school
+    if (degree) selectedEeducation.degree = degree
+    if (fieldOfStudy) selectedEeducation.fieldOfStudy = fieldOfStudy
+    if (from) selectedEeducation.from = from
+    if (to) selectedEeducation.to = to
+    if (current) selectedEeducation.current = current
+    if (description) selectedEeducation.description = description
+
+    await profile.save()
+    res.json(profile)
+  } catch (err) {
+    console.error('Error PUT /profile/education/:education_id, ', err.message)
+    res.status(500).send('Error PUT /profile/education/:education_id  request')
+  }
+})
+
+// @route DELETE /profile/education/:education_id
+// @desc Delete education from profile
+// @access Private
+router.delete('/education/:education_id', authMiddleware, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id })
+
+    const index = profile.education.findIndex(ed => ed.id === req.params.education_id)
+    profile.education.splice(index, 1)
+
+    await profile.save()
+    res.json(profile)
+  } catch (err) {
+    console.error('Error DELETE /profile/education/:education_id, ', err.message)
+    res.status(500).send('Error DELETE /profile/education/:education_id  request')
   }
 })
 
