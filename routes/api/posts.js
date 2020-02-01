@@ -62,4 +62,23 @@ router.get('/:post_id', authMiddleware, async (req, res) => {
   }
 })
 
+// @route DELETE /posts/:post_id
+// @desc Delete a post by id
+// @access Private
+router.delete('/:post_id', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id)
+
+    if (!post) return res.status(404).json({ msg: 'Post not found' })
+    if (req.user.id !== post.user.toString()) return res.status(401).json({ msg: 'Not authorized to delete post' })
+
+    await post.remove()
+    res.json({ msg: 'Post removed succesffully' })
+  } catch (err) {
+    console.error('Error DELETE /posts/:post_id request, ', err.message)
+    if (err.kind === 'ObjectId') return res.status(400).json({ msg: 'No post found' })
+    res.status(500).send('Error DELETE /posts/_post:id request')
+  }
+})
+
 module.exports = router
