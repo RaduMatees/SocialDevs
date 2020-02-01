@@ -33,4 +33,33 @@ router.post('/', [authMiddleware, [
   }
 })
 
+// @route GET /posts
+// @desc Get all posts 
+// @access Private
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ date: 'desc' })
+    res.json(posts)
+  } catch (err) {
+    console.error('Error GET /posts request, ', err.message)
+    res.status(500).send('Error GET /posts request')
+  }
+})
+
+// @route GET /posts/:post_id
+// @desc Get post by id
+// @access Private
+router.get('/:post_id', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id)
+    if (!post) return res.status(400).json({ msg: 'No post found' })
+
+    res.json(post)
+  } catch (err) {
+    console.error('Error GET /posts/:post_id request, ', err.message)
+    if (err.kind === 'ObjectId') return res.status(400).json({ msg: 'No post found' })
+    res.status(500).send('Error GET /posts/:post_id request')
+  }
+})
+
 module.exports = router
