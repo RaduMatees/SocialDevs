@@ -4,6 +4,8 @@ const authMiddleware = require('../../middleware/authMiddleware')
 const Profile = require('../../models/Profile')
 const User = require('../../models/User')
 const { check, validationResult } = require('express-validator')
+const request = require('request')
+const config = require('config')
 
 // @route GET /profile/me
 // @desc Get current user profile
@@ -273,6 +275,29 @@ router.delete('/education/:education_id', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error DELETE /profile/education/:education_id, ', err.message)
     res.status(500).send('Error DELETE /profile/education/:education_id  request')
+  }
+})
+
+// @route GET /profile/github/:username
+// @desc Get user repos from github
+// @access Public
+router.get('/github/:username', (req, res) => {
+  try {
+    const options = {
+      uri: `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`,
+      method: 'GET',
+      headers: { 'user-agent': 'node-js' }
+    }
+
+    request(options, (err, response, body) => {
+      if (err) console.error('Error getting github repos, ', err)
+      if (response.statusCode !== 200) res.status(404).json({ msg: 'Error getting github repos' })
+
+      res.json(JSON.parse(body))
+    })
+  } catch (err) {
+    console.error('Error GET /profile/github/:username, ', err.message)
+    res.status(500).send('Error GET /profile/github/:username  request')
   }
 })
 

@@ -1,4 +1,6 @@
 {
   "mongoURI": "mongodb+srv://RaduRaducuM:rasina@socialdevs-ak3iz.mongodb.net/test?retryWrites=true&w=majority",
-  "jwtSecret": "well preserved secret"
+  "jwtSecret": "well preserved secret",
+  "githubClientId": "8e8860cc0be5772e6581",
+  "githubSecret": "2cddd28b23ad56f7328ad825652a5001e2c96d93"
 }
